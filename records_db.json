@@ -1,0 +1,61 @@
+[
+  {
+    "invoice_id": "INV-ERR-9902",
+    "vendor": "Boone Lumber Yard",
+    "job_id": "JOB-104-SUNSET-RIDGE",
+    "cost_code": "06-1000-ROUGH-CARPENTRY",
+    "total": 7100.0,
+    "source": "Web Portal",
+    "status": "REQUIRES_REVIEW",
+    "flags": [
+      "MATH_MISMATCH (Expected $6,912.00, Got $7,100.00)",
+      "MISSING_LIEN_WAIVER (> $1,000 requires signed release)",
+      "BUDGET_OVERRUN (Exceeds 06-1000-ROUGH-CARPENTRY budget by $1,100.00)"
+    ],
+    "timestamp": "2026-09-17 03:53"
+  },
+  {
+    "invoice_id": "INV-CLOUD-7710",
+    "vendor": "Mid-Mo Heavy Crane Rentals",
+    "job_id": "JOB-104-SUNSET-RIDGE",
+    "cost_code": "03-3000-CONCRETE",
+    "total": 1944.0,
+    "source": "Cloud Watcher",
+    "status": "APPROVED_FOR_ERP",
+    "flags": [],
+    "timestamp": "2026-09-17 03:53"
+  },
+  {
+    "invoice_id": "INV-MMS-3488",
+    "vendor": "Home Depot Pro - Columbia",
+    "job_id": "JOB-104-SUNSET-RIDGE",
+    "cost_code": "06-1000-ROUGH-CARPENTRY",
+    "total": 348.5,
+    "source": "SMS/MMS Photo",
+    "status": "APPROVED_FOR_ERP",
+    "flags": [],
+    "timestamp": "2026-09-17 03:53"
+  },
+  {
+    "invoice_id": "INV-MAIL-8842",
+    "vendor": "Columbia Plumbing Services",
+    "job_id": "JOB-104-SUNSET-RIDGE",
+    "cost_code": "15-0000-PLUMBING",
+    "total": 4200.0,
+    "source": "Email Webhook",
+    "status": "APPROVED_FOR_ERP",
+    "flags": [],
+    "timestamp": "2026-09-17 03:53"
+  },
+  {
+    "invoice_id": "INV-WEB-101",
+    "vendor": "Mid-Mo Concrete Co.",
+    "job_id": "JOB-104-SUNSET-RIDGE",
+    "cost_code": "03-3000-CONCRETE",
+    "total": 2462.4,
+    "source": "Web Portal",
+    "status": "APPROVED_FOR_ERP",
+    "flags": [],
+    "timestamp": "2026-09-17 03:53"
+  }
+]

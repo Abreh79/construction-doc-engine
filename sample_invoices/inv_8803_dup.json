@@ -1,0 +1,18 @@
+{
+  "invoice_id": "INV-2026-8801",
+  "vendor": "Mid-Mo Ready Mix Concrete Co.",
+  "date": "2026-09-16",
+  "job_id": "JOB-104-SUNSET-RIDGE",
+  "cost_code": "03-3000-CONCRETE",
+  "line_items": [
+    {
+      "description": "4000 PSI Exterior Concrete Mix",
+      "qty": 5,
+      "unit_price": 140.0,
+      "total": 700.0
+    }
+  ],
+  "subtotal": 700.0,
+  "tax": 56.0,
+  "total": 756.0
+}

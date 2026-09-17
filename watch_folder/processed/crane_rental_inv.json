@@ -1,0 +1,10 @@
+{
+  "invoice_id": "INV-CLOUD-7710",
+  "vendor": "Mid-Mo Heavy Crane Rentals",
+  "subtotal": 1800.0,
+  "tax": 144.0,
+  "total": 1944.0,
+  "job_id": "JOB-104-SUNSET-RIDGE",
+  "cost_code": "03-3000-CONCRETE",
+  "lien_waiver_attached": true
+}

@@ -1,0 +1,24 @@
+{
+  "invoice_id": "INV-2026-8802",
+  "vendor": "Boone Lumber & Framing Supplies",
+  "date": "2026-09-15",
+  "job_id": "JOB-104-SUNSET-RIDGE",
+  "cost_code": "06-1000-ROUGH-CARPENTRY",
+  "line_items": [
+    {
+      "description": "2x4x16 SPF Premium Lumber (Bundle)",
+      "qty": 10,
+      "unit_price": 450.0,
+      "total": 4500.0
+    },
+    {
+      "description": "3/4 inch OSB Subfloor Sheathing",
+      "qty": 50,
+      "unit_price": 38.0,
+      "total": 1900.0
+    }
+  ],
+  "subtotal": 6400.0,
+  "tax": 512.0,
+  "total": 7100.0
+}

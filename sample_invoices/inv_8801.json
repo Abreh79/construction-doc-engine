@@ -1,0 +1,24 @@
+{
+  "invoice_id": "INV-2026-8801",
+  "vendor": "Mid-Mo Ready Mix Concrete Co.",
+  "date": "2026-09-12",
+  "job_id": "JOB-104-SUNSET-RIDGE",
+  "cost_code": "03-3000-CONCRETE",
+  "line_items": [
+    {
+      "description": "4000 PSI Exterior Concrete Mix (Yards)",
+      "qty": 15,
+      "unit_price": 140.0,
+      "total": 2100.0
+    },
+    {
+      "description": "Fiber Mesh Reinforcement Additive",
+      "qty": 15,
+      "unit_price": 12.0,
+      "total": 180.0
+    }
+  ],
+  "subtotal": 2280.0,
+  "tax": 182.4,
+  "total": 2462.4
+}
