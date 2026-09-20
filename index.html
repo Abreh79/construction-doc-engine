@@ -791,7 +791,16 @@
         }
 
         function openCustomerBillingPortal() {
-            showToast("🔒 Opening SiteVault Pro Workspace & Billing Portal...", "info");
+            document.getElementById('billing-modal').classList.remove('hidden');
+        }
+
+        function closeBillingModal() {
+            document.getElementById('billing-modal').classList.add('hidden');
+        }
+
+        function startSubscriptionCheckout(priceId) {
+            closeBillingModal();
+            showToast(`💳 Redirecting to secure payment checkout for ${priceId}...`, "info");
         }
 
         // Mobile / Intake File Select Handler
@@ -910,6 +919,66 @@
                 <button onclick="sendLienWaiverRequest()" class="px-5 py-2 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 font-extrabold rounded-xl text-xs shadow-lg shadow-amber-500/20">
                     📲 Send Request & Lock Payment
                 </button>
+            </div>
+        </div>
+    </div>
+    <!-- Workspace & Billing Pricing Tier Modal -->
+    <div id="billing-modal" class="fixed inset-0 z-50 hidden bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-4" onclick="if(event.target === this) closeBillingModal()">
+        <div class="bg-slate-900 border border-slate-800 rounded-3xl max-w-2xl w-full p-6 sm:p-8 space-y-6 shadow-2xl relative overflow-hidden">
+            <div class="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-amber-500 via-emerald-500 to-amber-500"></div>
+            
+            <div class="flex justify-between items-center border-b border-slate-800 pb-4">
+                <div>
+                    <h3 class="text-xl font-extrabold text-white flex items-center gap-2">
+                        <span>⚡</span> SiteVault Pro Workspace & Billing
+                    </h3>
+                    <p class="text-xs text-slate-400 font-mono">Select a tier to activate autonomous invoice ingestion for your team</p>
+                </div>
+                <button onclick="closeBillingModal()" class="text-slate-400 hover:text-white text-xl font-bold p-1 rounded-lg hover:bg-slate-800">✕</button>
+            </div>
+
+            <!-- Tier Cards Grid -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                <!-- Starter Tier Card -->
+                <div class="bg-slate-950/90 border border-slate-800 hover:border-slate-700 rounded-2xl p-5 flex flex-col justify-between space-y-4 relative transition-all">
+                    <div class="space-y-2">
+                        <div class="text-xs font-mono font-bold text-slate-400 uppercase tracking-wider">Starter Tier</div>
+                        <div class="flex items-baseline gap-1">
+                            <span class="text-3xl font-black text-white font-mono">$99</span>
+                            <span class="text-xs text-slate-400 font-mono">/month</span>
+                        </div>
+                        <p class="text-xs text-slate-300 font-medium pt-2 border-t border-slate-800/80">
+                            Up to 75 Invoices/mo, Camera & Web Upload, Real-Time Math & CSI Audit, Basic Export.
+                        </p>
+                    </div>
+                    <button onclick="startSubscriptionCheckout('price_starter_99')" class="w-full py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold rounded-xl text-xs border border-slate-700 transition-all shadow-md">
+                        Select Starter ($99/mo)
+                    </button>
+                </div>
+
+                <!-- Growth Tier Card (Recommended) -->
+                <div class="bg-slate-950/90 border-2 border-amber-500/60 hover:border-amber-400 rounded-2xl p-5 flex flex-col justify-between space-y-4 relative transition-all shadow-xl shadow-amber-950/20">
+                    <div class="absolute -top-3 right-4 bg-amber-500 text-slate-950 text-[10px] font-black uppercase px-2.5 py-0.5 rounded-full font-mono shadow-md">
+                        Recommended
+                    </div>
+                    <div class="space-y-2">
+                        <div class="text-xs font-mono font-bold text-amber-400 uppercase tracking-wider">Growth Tier</div>
+                        <div class="flex items-baseline gap-1">
+                            <span class="text-3xl font-black text-white font-mono">$249</span>
+                            <span class="text-xs text-slate-400 font-mono">/month</span>
+                        </div>
+                        <p class="text-xs text-slate-300 font-medium pt-2 border-t border-slate-800/80">
+                            Up to 300 Invoices/mo, Multi-Channel SMS/Email Watcher, Automated Lien Waiver Tracking, Phase Budget Caps.
+                        </p>
+                    </div>
+                    <button onclick="startSubscriptionCheckout('price_growth_249')" class="w-full py-2.5 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 font-extrabold rounded-xl text-xs shadow-lg shadow-amber-500/20 transition-all">
+                        Select Growth ($249/mo)
+                    </button>
+                </div>
+            </div>
+
+            <div class="text-[11px] text-slate-400 text-center font-mono border-t border-slate-800 pt-3">
+                🔒 Enterprise-grade 256-bit SSL encryption. Cancel or change tiers anytime.
             </div>
         </div>
     </div>
