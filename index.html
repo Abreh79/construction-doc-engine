@@ -18,19 +18,33 @@
     <div id="toast-container" class="fixed top-5 right-5 z-50 space-y-3 pointer-events-none max-w-md w-full px-4"></div>
 
     <div class="max-w-7xl mx-auto space-y-10">
-        <!-- Header -->
-        <header class="border-b border-slate-800 pb-5 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+        <!-- High-End Command Header -->
+        <header class="border-b border-white/10 bg-slate-950/80 backdrop-blur-md sticky top-0 z-50 px-4 sm:px-8 py-4 flex flex-col sm:flex-row justify-between items-center gap-4 rounded-2xl mb-8">
+          <div class="flex items-center gap-3">
+            <div class="h-10 w-10 rounded-xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-center text-amber-400 font-black text-xl shadow-[0_0_15px_rgba(245,158,11,0.2)]">
+              ⚡
+            </div>
             <div>
-                <h1 class="text-2xl sm:text-3xl font-black text-white flex items-center gap-2">
-                    <span>🏗️</span> Construction Invoice Ingestion & Audit System
-                </h1>
-                <p class="text-slate-400 text-xs sm:text-sm">Instant Camera Upload, Multi-Channel Ingestion & AI Job-Costing Safeguards</p>
+              <h1 class="text-lg font-extrabold tracking-wider text-white uppercase flex items-center gap-2">
+                SiteVault <span class="text-xs px-2 py-0.5 rounded bg-amber-500/20 text-amber-400 border border-amber-500/30 font-mono">PRO ENGINE</span>
+              </h1>
+              <p class="text-xs text-slate-400 font-mono tracking-tight">Autonomous Invoice Ingestion & Job-Costing Safeguard</p>
             </div>
-            <div class="flex items-center gap-3">
-                <span id="total-count-badge" class="bg-slate-900 text-blue-400 border border-slate-700 px-4 py-2 rounded-xl text-xs font-extrabold font-mono">
-                    5 Total Ingested
-                </span>
+          </div>
+
+          <!-- Live Financial Protection Ticker -->
+          <div class="flex items-center gap-4 sm:gap-6">
+            <span id="total-count-badge" class="bg-slate-900 text-amber-400 border border-amber-500/30 px-3 py-1.5 rounded-lg text-xs font-extrabold font-mono">
+                5 Total Ingested
+            </span>
+            <div class="text-right">
+              <div class="text-[10px] uppercase tracking-widest text-slate-400 font-bold">Audit Exposure Blocked</div>
+              <div class="text-base font-mono font-bold text-emerald-400">$18,450.00</div>
             </div>
+            <button onclick="openCustomerBillingPortal()" class="px-4 py-2 rounded-lg bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 font-bold text-xs uppercase tracking-wider shadow-lg shadow-amber-500/20 transition-all cursor-pointer">
+              Workspace & Billing
+            </button>
+          </div>
         </header>
 
         <!-- LIVE FIELD INGESTION PORTAL -->
@@ -613,6 +627,10 @@
             closeReviewDrawer();
             renderRecords();
             showToast(`⚡ ${rec.id} Force Approved & Pushed to ERP Sync Queue!`, "success");
+        }
+
+        function openCustomerBillingPortal() {
+            showToast("🔒 Opening SiteVault Pro Workspace & Billing Portal...", "info");
         }
 
         // Mobile / Intake File Select Handler
