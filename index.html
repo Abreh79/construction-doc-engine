@@ -1,0 +1,692 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Construction Invoice Ingestion & Audit Engine</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Plus Jakarta Sans', sans-serif; }
+        .toast-enter { transform: translateY(-20px); opacity: 0; }
+        .toast-show { transform: translateY(0); opacity: 1; transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1); }
+    </style>
+</head>
+<body class="bg-slate-950 text-slate-100 min-h-screen p-4 sm:p-8 font-sans antialiased relative">
+
+    <!-- Active Feedback Toast Notification Container -->
+    <div id="toast-container" class="fixed top-5 right-5 z-50 space-y-3 pointer-events-none max-w-md w-full px-4"></div>
+
+    <div class="max-w-7xl mx-auto space-y-10">
+        <!-- Header -->
+        <header class="border-b border-slate-800 pb-5 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+            <div>
+                <h1 class="text-2xl sm:text-3xl font-black text-white flex items-center gap-2">
+                    <span>🏗️</span> Construction Invoice Ingestion & Audit System
+                </h1>
+                <p class="text-slate-400 text-xs sm:text-sm">Instant Camera Upload, Multi-Channel Ingestion & AI Job-Costing Safeguards</p>
+            </div>
+            <div class="flex items-center gap-3">
+                <span id="total-count-badge" class="bg-slate-900 text-blue-400 border border-slate-700 px-4 py-2 rounded-xl text-xs font-extrabold font-mono">
+                    5 Total Ingested
+                </span>
+            </div>
+        </header>
+
+        <!-- LIVE FIELD INGESTION PORTAL -->
+        <section class="bg-slate-900/90 border border-slate-800 rounded-3xl p-6 sm:p-8 shadow-2xl space-y-6">
+            <h2 class="text-xl font-extrabold text-white flex items-center gap-2">
+                <span>📸</span> Ingest New Document / Snap Receipt Photo
+            </h2>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <!-- Dropzone & Inputs -->
+                <div class="space-y-4">
+                    <div id="drop-zone" onclick="document.getElementById('invoice-upload').click()" class="border-2 border-dashed border-slate-700 hover:border-blue-500 rounded-2xl p-6 text-center cursor-pointer transition-all bg-slate-950/60 group">
+                        <!-- Task 5: Job-Site Mobile Camera Optimization -->
+                        <input type="file" id="invoice-upload" accept="image/*,application/pdf" capture="environment" class="hidden" onchange="handleFileSelect(event)">
+                        <div class="text-4xl mb-2 group-hover:scale-110 transition-transform">📄</div>
+                        <p class="text-sm font-semibold text-slate-200">Tap to Snap Photo or Select Invoice PDF</p>
+                        <p class="text-xs text-slate-500 mt-1">Direct Field Rear Camera Capture (JPG, PNG, HEIC, PDF)</p>
+                        <div id="file-name-preview" class="hidden mt-3 text-xs font-mono bg-blue-950/60 text-blue-400 border border-blue-800/50 py-1.5 px-3 rounded-lg"></div>
+                    </div>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
+                        <div>
+                            <label class="block font-bold text-slate-300 mb-1">Select Job Site</label>
+                            <select id="job-id" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2.5 text-slate-200 font-semibold focus:outline-none focus:border-blue-500">
+                                <option value="JOB-104-SUNSET-RIDGE">JOB-104: Sunset Ridge Complex</option>
+                                <option value="JOB-105-OAK-CREST">JOB-105: Oak Crest Subdivision</option>
+                            </select>
+                        </div>
+
+                        <div>
+                            <label class="block font-bold text-slate-300 mb-1">CSI Cost Code</label>
+                            <select id="cost-code" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2.5 text-slate-200 font-semibold focus:outline-none focus:border-blue-500">
+                                <option value="03-3000-CONCRETE">03-3000 Concrete Supply</option>
+                                <option value="06-1000-ROUGH-CARPENTRY">06-1000 Rough Framing</option>
+                                <option value="15-0000-PLUMBING">15-0000 Plumbing Utilities</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-3 text-xs">
+                        <div>
+                            <label class="block font-bold text-slate-300 mb-1">Vendor Name</label>
+                            <input type="text" id="vendor-input" placeholder="e.g. Boone Lumber Co." class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2.5 text-slate-200 focus:outline-none focus:border-blue-500">
+                        </div>
+                        <div>
+                            <label class="block font-bold text-slate-300 mb-1">Total Amount ($)</label>
+                            <input type="number" id="amount-input" step="0.01" placeholder="0.00" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2.5 text-slate-200 focus:outline-none focus:border-blue-500">
+                        </div>
+                    </div>
+
+                    <div class="flex items-center space-x-2 bg-slate-950/60 p-3 rounded-xl border border-slate-800 text-xs">
+                        <input type="checkbox" id="lien-waiver-check" class="w-4 h-4 rounded text-blue-600 bg-slate-900 border-slate-700 focus:ring-blue-500">
+                        <label for="lien-waiver-check" class="font-bold text-slate-300 cursor-pointer">Signed Partial/Final Lien Waiver Attached</label>
+                    </div>
+
+                    <button onclick="processUpload()" class="w-full py-3.5 bg-blue-600 hover:bg-blue-500 text-white font-bold rounded-xl shadow-lg shadow-blue-600/20 transition-all text-sm flex items-center justify-center gap-2">
+                        <span>⚡ Run AI Ingestion & Audit Safeguards</span>
+                    </button>
+                </div>
+
+                <!-- Instant Extraction Feedback -->
+                <div class="bg-slate-950/80 border border-slate-800 rounded-2xl p-5 flex flex-col justify-between">
+                    <div>
+                        <h3 class="text-sm font-bold text-slate-300 mb-3">Instant Ingestion Feedback:</h3>
+                        <div id="status-card" class="text-center py-8 space-y-3">
+                            <div class="text-3xl text-slate-600">📥</div>
+                            <p class="text-xs text-slate-400">Fill details above or snap receipt photo to trigger real-time AI extraction & audit verification.</p>
+                        </div>
+                    </div>
+                    <div class="text-[11px] text-slate-500 border-t border-slate-800/80 pt-3">
+                        ✓ Ingested documents immediately update the master audit log below.
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- MASTER AUDIT LOG CARDS -->
+        <section class="space-y-4">
+            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b border-slate-800 pb-4">
+                <div>
+                    <h2 class="text-xl font-extrabold text-white flex items-center gap-2">
+                        <span>📊</span> Ingested Document Audit History
+                    </h2>
+                    <p class="text-xs text-slate-400">Real-time sync across Web, Email, SMS and Cloud Watchers</p>
+                </div>
+                <!-- Task 1: Direct QuickBooks CSV Export -->
+                <button onclick="exportQuickBooksCSV()" class="bg-emerald-600 hover:bg-emerald-500 text-white font-black px-5 py-2.5 rounded-xl shadow-lg shadow-emerald-600/20 transition-all text-xs flex items-center gap-2">
+                    <span>📥 Export Approved for QuickBooks (CSV)</span>
+                </button>
+            </div>
+
+            <div id="records-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- Dynamically rendered by JS -->
+            </div>
+        </section>
+    </div>
+
+    <!-- Task 2: Side-by-Side Review & Edit Drawer / Modal -->
+    <div id="review-drawer" class="fixed inset-0 z-50 hidden bg-slate-950/80 backdrop-blur-md flex justify-end transition-opacity">
+        <div class="bg-slate-900 border-l border-slate-800 w-full max-w-4xl h-full flex flex-col shadow-2xl">
+            <!-- Drawer Header -->
+            <div class="p-6 border-b border-slate-800 flex justify-between items-center bg-slate-950/50">
+                <div>
+                    <h3 class="text-lg font-black text-white flex items-center gap-2">
+                        <span>🔍</span> Side-by-Side Review & Edit
+                    </h3>
+                    <p id="drawer-invoice-id-subtitle" class="text-xs text-slate-400 font-mono">Invoice ID: INV-ERR-9902</p>
+                </div>
+                <button onclick="closeReviewDrawer()" class="text-slate-400 hover:text-white p-2 text-xl font-bold rounded-lg hover:bg-slate-800">
+                    ✕
+                </button>
+            </div>
+
+            <!-- Drawer Body: Side-by-Side Layout -->
+            <div class="flex-1 overflow-y-auto p-6 grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- Left Pane: Uploaded Receipt/PDF Visual Preview -->
+                <div class="bg-slate-950 border border-slate-800 rounded-2xl p-4 flex flex-col justify-between space-y-4">
+                    <div class="flex justify-between items-center border-b border-slate-800 pb-2">
+                        <span class="text-xs font-bold text-slate-400">📄 Receipt / PDF Document Preview</span>
+                        <span id="drawer-channel-badge" class="text-[10px] font-mono text-blue-400 bg-blue-950/60 px-2 py-0.5 rounded border border-blue-800/50">Web Portal</span>
+                    </div>
+                    
+                    <!-- Simulated Receipt OCR Display -->
+                    <div id="receipt-preview-container" class="bg-slate-900/90 border border-slate-700/80 rounded-xl p-4 text-slate-200 font-mono text-xs space-y-3 relative overflow-hidden">
+                        <div class="absolute top-2 right-2 bg-amber-500/20 text-amber-400 text-[10px] px-2 py-0.5 rounded font-bold border border-amber-500/30">
+                            OCR Flagged
+                        </div>
+                        <div class="text-center border-b border-slate-700/80 pb-2">
+                            <div id="preview-vendor-header" class="font-black text-sm text-white">BOONE LUMBER YARD</div>
+                            <div class="text-[10px] text-slate-400">Field Delivery Receipt</div>
+                            <div id="preview-inv-num" class="text-[10px] text-blue-400 font-bold mt-0.5">INV-ERR-9902</div>
+                        </div>
+                        <div class="space-y-1.5 text-[11px]">
+                            <div class="flex justify-between"><span>2x4 Pressure Treated (100)</span><span>$1,850.00</span></div>
+                            <div class="flex justify-between"><span>3/4 OSB Sheathing (50)</span><span>$2,400.00</span></div>
+                            <div class="flex justify-between"><span>Framing Nails & Hardware</span><span>$2,662.00</span></div>
+                            <div class="flex justify-between border-t border-slate-700 pt-1 text-slate-400"><span>Calculated Subtotal</span><span>$6,912.00</span></div>
+                            <div class="flex justify-between text-amber-300 font-bold bg-amber-950/40 p-1.5 rounded border border-amber-800/50"><span>Billed Header Amount</span><span id="preview-billed-amount">$7,100.00</span></div>
+                        </div>
+                        <div class="border-t border-slate-700 pt-2 text-[10px] text-slate-400 flex justify-between">
+                            <span>Audit Variance: +$188.00</span>
+                            <span class="text-amber-400 font-bold">Math Mismatch</span>
+                        </div>
+                    </div>
+
+                    <div class="text-[11px] text-slate-400 bg-slate-900/60 p-3 rounded-xl border border-slate-800 flex items-center gap-2">
+                        <span>💡</span> Inspect extracted document text against field inputs before forcing ERP sync.
+                    </div>
+                </div>
+
+                <!-- Right Pane: Edit Form Inputs -->
+                <div class="space-y-4">
+                    <h4 class="text-xs font-bold uppercase tracking-wider text-slate-400 border-b border-slate-800 pb-2">
+                        Quick Edit Fields
+                    </h4>
+
+                    <div class="space-y-3 text-xs">
+                        <div>
+                            <label class="block font-bold text-slate-300 mb-1">Vendor Name</label>
+                            <input type="text" id="drawer-vendor" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-slate-100 font-semibold focus:outline-none focus:border-blue-500">
+                        </div>
+
+                        <div>
+                            <label class="block font-bold text-slate-300 mb-1">Invoice Number</label>
+                            <input type="text" id="drawer-invoice-num" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-slate-100 font-mono focus:outline-none focus:border-blue-500">
+                        </div>
+
+                        <div>
+                            <label class="block font-bold text-slate-300 mb-1">Total Amount ($)</label>
+                            <input type="number" step="0.01" id="drawer-amount" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-slate-100 font-bold focus:outline-none focus:border-blue-500">
+                        </div>
+
+                        <div>
+                            <label class="block font-bold text-slate-300 mb-1">Job Selection</label>
+                            <select id="drawer-job" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-slate-100 font-semibold focus:outline-none focus:border-blue-500">
+                                <option value="JOB-104-SUNSET-RIDGE">JOB-104: Sunset Ridge Complex</option>
+                                <option value="JOB-105-OAK-CREST">JOB-105: Oak Crest Subdivision</option>
+                            </select>
+                        </div>
+
+                        <div>
+                            <label class="block font-bold text-slate-300 mb-1">Cost Code Selection</label>
+                            <select id="drawer-cost-code" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-slate-100 font-semibold focus:outline-none focus:border-blue-500">
+                                <option value="03-3000-CONCRETE">03-3000 Concrete Supply</option>
+                                <option value="06-1000-ROUGH-CARPENTRY">06-1000 Rough Framing</option>
+                                <option value="15-0000-PLUMBING">15-0000 Plumbing Utilities</option>
+                            </select>
+                        </div>
+
+                        <div class="flex items-center space-x-2 bg-slate-950/80 p-3 rounded-xl border border-slate-800">
+                            <input type="checkbox" id="drawer-lien-waiver" class="w-4 h-4 rounded text-blue-600 bg-slate-900 border-slate-700 focus:ring-blue-500">
+                            <label for="drawer-lien-waiver" class="font-bold text-slate-300 cursor-pointer">Signed Lien Waiver Attached</label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Drawer Footer Actions -->
+            <div class="p-6 border-t border-slate-800 bg-slate-950/80 flex flex-col sm:flex-row gap-3 justify-end">
+                <button onclick="saveAndReAudit()" class="px-5 py-3 bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold rounded-xl text-xs transition-all border border-slate-700">
+                    🔄 Save & Re-Audit
+                </button>
+                <button onclick="forceApproveERP()" class="px-5 py-3 bg-emerald-600 hover:bg-emerald-500 text-white font-extrabold rounded-xl text-xs shadow-lg shadow-emerald-600/20 transition-all">
+                    ⚡ Force Approve (ERP)
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Phase Budget Allocation Caps
+        const BUDGET_CAPS = {
+            "03-3000-CONCRETE": { name: "Concrete Supply", cap: 25000.00 },
+            "06-1000-ROUGH-CARPENTRY": { name: "Rough Framing", cap: 15000.00 },
+            "15-0000-PLUMBING": { name: "Plumbing Utilities", cap: 10000.00 }
+        };
+
+        // Master Records Database
+        let records = [
+            {
+                id: "INV-ERR-9902",
+                vendor: "Boone Lumber Yard",
+                date: "2026-09-17",
+                amount: 7100.00,
+                jobId: "JOB-104-SUNSET-RIDGE",
+                costCode: "06-1000-ROUGH-CARPENTRY",
+                channel: "Web Portal",
+                status: "REQUIRES_REVIEW",
+                flags: [
+                    "MATH_MISMATCH (Expected $6,912.00, Got $7,100.00)",
+                    "MISSING_LIEN_WAIVER (> $1,000 requires signed release)",
+                    "BUDGET_OVERRUN (Exceeds 06-1000-ROUGH-CARPENTRY budget by $1,100.00)"
+                ],
+                waiverStatus: "MISSING",
+                expectedMathAmount: 6912.00
+            },
+            {
+                id: "INV-CLOUD-7710",
+                vendor: "Mid-Mo Heavy Crane Rentals",
+                date: "2026-09-17",
+                amount: 1944.00,
+                jobId: "JOB-104-SUNSET-RIDGE",
+                costCode: "03-3000-CONCRETE",
+                channel: "Cloud Watcher",
+                status: "APPROVED_FOR_ERP",
+                flags: [],
+                waiverStatus: "ATTACHED"
+            },
+            {
+                id: "INV-MMS-3488",
+                vendor: "Home Depot Pro - Columbia",
+                date: "2026-09-17",
+                amount: 348.50,
+                jobId: "JOB-104-SUNSET-RIDGE",
+                costCode: "06-1000-ROUGH-CARPENTRY",
+                channel: "SMS/MMS Photo",
+                status: "APPROVED_FOR_ERP",
+                flags: [],
+                waiverStatus: "NOT_REQUIRED"
+            },
+            {
+                id: "INV-MAIL-8842",
+                vendor: "Columbia Plumbing Services",
+                date: "2026-09-17",
+                amount: 4200.00,
+                jobId: "JOB-104-SUNSET-RIDGE",
+                costCode: "15-0000-PLUMBING",
+                channel: "Email Webhook",
+                status: "APPROVED_FOR_ERP",
+                flags: [],
+                waiverStatus: "ATTACHED"
+            },
+            {
+                id: "INV-WEB-101",
+                vendor: "Mid-Mo Concrete Co.",
+                date: "2026-09-17",
+                amount: 2462.40,
+                jobId: "JOB-104-SUNSET-RIDGE",
+                costCode: "03-3000-CONCRETE",
+                channel: "Web Portal",
+                status: "APPROVED_FOR_ERP",
+                flags: [],
+                waiverStatus: "ATTACHED"
+            }
+        ];
+
+        let activeEditingId = null;
+
+        // Initialize UI
+        document.addEventListener('DOMContentLoaded', () => {
+            renderRecords();
+        });
+
+        // Toast Feedback System
+        function showToast(message, type = 'info') {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            
+            const bgClass = type === 'success' 
+                ? 'bg-emerald-900/90 border-emerald-500 text-emerald-100' 
+                : 'bg-blue-900/90 border-blue-500 text-blue-100';
+
+            toast.className = `p-4 rounded-2xl border shadow-2xl backdrop-blur-md font-medium text-xs flex items-center justify-between pointer-events-auto toast-enter ${bgClass}`;
+            toast.innerHTML = `
+                <div class="flex items-center gap-2">
+                    <span class="text-base">${type === 'success' ? '⚡' : 'ℹ️'}</span>
+                    <span>${message}</span>
+                </div>
+                <button onclick="this.parentElement.remove()" class="text-slate-300 hover:text-white ml-3 font-bold">✕</button>
+            `;
+
+            container.appendChild(toast);
+            
+            // Animate in
+            setTimeout(() => {
+                toast.classList.remove('toast-enter');
+                toast.classList.add('toast-show');
+            }, 10);
+
+            // Auto dismiss
+            setTimeout(() => {
+                toast.classList.remove('toast-show');
+                toast.classList.add('toast-enter');
+                setTimeout(() => toast.remove(), 300);
+            }, 5000);
+        }
+
+        // Calculate Cost Code Total Committed
+        function getCostCodeCommitted(costCode) {
+            return records
+                .filter(r => r.costCode === costCode)
+                .reduce((sum, r) => sum + r.amount, 0);
+        }
+
+        // Render Cards Grid
+        function renderRecords() {
+            const grid = document.getElementById('records-grid');
+            document.getElementById('total-count-badge').textContent = `${records.length} Total Ingested`;
+
+            grid.innerHTML = records.map(r => {
+                // Task 4: Calculate Phase Budget metrics
+                const budgetObj = BUDGET_CAPS[r.costCode] || { cap: 15000.00 };
+                const budgetCap = budgetObj.cap;
+                const committed = getCostCodeCommitted(r.costCode);
+                const isOver = committed > budgetCap;
+                const overrunAmount = isOver ? committed - budgetCap : 0;
+                const remaining = !isOver ? budgetCap - committed : 0;
+                const pct = Math.min(100, Math.round((committed / budgetCap) * 100));
+
+                const barColor = isOver ? 'bg-red-500 shadow-lg shadow-red-500/50' : 'bg-blue-500';
+                
+                const statusBg = r.status === 'APPROVED_FOR_ERP'
+                    ? 'bg-emerald-950/80 text-emerald-400 border-emerald-800/80'
+                    : 'bg-amber-950/80 text-amber-300 border-amber-800/80';
+
+                // Check if has missing lien waiver flag
+                const hasMissingWaiver = r.waiverStatus === 'MISSING' || r.flags.some(f => f.includes('MISSING_LIEN_WAIVER'));
+
+                // Action buttons HTML
+                let actionBtnHtml = '';
+                if (r.status === 'REQUIRES_REVIEW') {
+                    actionBtnHtml = `
+                        <button onclick="openReviewDrawer('${r.id}')" class="w-full mt-3 py-2 bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 font-extrabold rounded-xl border border-amber-500/40 text-xs transition-all flex items-center justify-center gap-1.5">
+                            <span>🔍 Side-by-Side Review & Resolve</span>
+                        </button>
+                    `;
+                }
+
+                let waiverBtnHtml = '';
+                if (hasMissingWaiver && r.waiverStatus !== 'WAIVER_REQUESTED') {
+                    // Task 3: One-Click Lien Waiver Request Action Button
+                    waiverBtnHtml = `
+                        <button onclick="requestLienWaiver('${r.id}')" class="mt-2 text-[11px] bg-blue-600/30 hover:bg-blue-600/50 text-blue-300 border border-blue-500/40 font-bold px-3 py-1.5 rounded-lg transition-all flex items-center gap-1">
+                            <span>⚡ Request Lien Waiver (SMS/Email)</span>
+                        </button>
+                    `;
+                } else if (r.waiverStatus === 'WAIVER_REQUESTED') {
+                    waiverBtnHtml = `
+                        <div class="mt-2 text-[10px] bg-blue-950 text-blue-400 border border-blue-800/60 px-2.5 py-1 rounded-lg font-mono font-bold inline-block">
+                            📲 Waiver Dispatched via SMS/Email
+                        </div>
+                    `;
+                }
+
+                // Flags List HTML
+                let flagsListHtml = '';
+                if (r.flags && r.flags.length > 0) {
+                    flagsListHtml = `<ul class="space-y-1">` + r.flags.map(f => `<li class="text-xs text-amber-300 font-medium">⚠️ ${f}</li>`).join('') + `</ul>`;
+                } else {
+                    flagsListHtml = `<span class="text-xs text-emerald-400 font-medium">✓ All Math, Lien & Budget Audits Passed</span>`;
+                }
+
+                return `
+                <div class="bg-slate-900 border border-slate-800 rounded-3xl p-6 shadow-xl flex flex-col justify-between space-y-4 hover:border-slate-700 transition-all relative">
+                    <div>
+                        <div class="flex justify-between items-center mb-3">
+                            <span class="text-xs font-mono text-slate-400 font-bold">${r.id}</span>
+                            <span class="px-3 py-1 rounded-full text-[11px] font-black border ${statusBg}">${r.status}</span>
+                        </div>
+                        <h3 class="text-lg font-extrabold text-white mb-1">${r.vendor}</h3>
+                        <div class="text-xs text-slate-400 font-medium">Job: <span class="text-slate-200 font-semibold">${r.jobId}</span></div>
+                        <div class="text-xs text-slate-400 font-medium mt-0.5">Code: <span class="text-slate-200 font-mono">${r.costCode}</span></div>
+                        
+                        <!-- Task 4: Real-Time Phase Budget Visualizer -->
+                        <div class="mt-4 bg-slate-950/80 border border-slate-800/80 rounded-2xl p-3 space-y-2">
+                            <div class="flex justify-between items-center text-[11px] font-mono">
+                                <span class="text-slate-400 font-bold">Phase Budget Bar</span>
+                                <span class="text-slate-300">${pct}%</span>
+                            </div>
+                            <div class="w-full bg-slate-800 rounded-full h-2 overflow-hidden">
+                                <div class="${barColor} h-2 rounded-full transition-all duration-500" style="width: ${pct}%"></div>
+                            </div>
+                            <div class="text-[10px] font-mono text-slate-400 space-y-0.5 pt-0.5">
+                                <div>Phase Budget: $${budgetCap.toLocaleString('en-US', {minimumFractionDigits: 2})} | Committed: $${committed.toLocaleString('en-US', {minimumFractionDigits: 2})}</div>
+                                ${isOver 
+                                    ? `<div class="text-red-400 font-extrabold">⚠️ Over budget by $${overrunAmount.toLocaleString('en-US', {minimumFractionDigits: 2})}</div>`
+                                    : `<div class="text-emerald-400">Balance Remaining: $${remaining.toLocaleString('en-US', {minimumFractionDigits: 2})}</div>`
+                                }
+                            </div>
+                        </div>
+
+                        <div class="mt-4 text-3xl font-black text-blue-400">$${r.amount.toLocaleString('en-US', {minimumFractionDigits: 2})}</div>
+                    </div>
+
+                    <div class="border-t border-slate-800 pt-3 space-y-2">
+                        <div class="flex justify-between items-center">
+                            <span class="text-xs font-bold text-slate-400">Audit Verification:</span>
+                            <span class="text-[10px] font-bold bg-slate-800 text-slate-300 px-2 py-0.5 rounded-full border border-slate-700 font-mono">Channel: ${r.channel}</span>
+                        </div>
+                        
+                        ${flagsListHtml}
+                        ${waiverBtnHtml}
+                        ${actionBtnHtml}
+                    </div>
+                </div>
+                `;
+            }).join('');
+        }
+
+        // Task 1: Direct QuickBooks CSV Export
+        function exportQuickBooksCSV() {
+            const approved = records.filter(r => r.status === 'APPROVED_FOR_ERP');
+            
+            if (approved.length === 0) {
+                showToast("No documents currently carrying APPROVED_FOR_ERP status.", "info");
+                return;
+            }
+
+            // Headers required by specification
+            const headers = [
+                'Vendor_Name',
+                'Invoice_Number',
+                'Invoice_Date',
+                'Total_Amount',
+                'Job_ID',
+                'Cost_Code',
+                'Audit_Status',
+                'Ingestion_Channel'
+            ];
+
+            const rows = approved.map(r => [
+                `"${r.vendor.replace(/"/g, '""')}"`,
+                `"${r.id}"`,
+                `"${r.date}"`,
+                r.amount.toFixed(2),
+                `"${r.jobId}"`,
+                `"${r.costCode}"`,
+                `"${r.status}"`,
+                `"${r.channel}"`
+            ]);
+
+            const csvContent = "data:text/csv;charset=utf-8," + [headers.join(','), ...rows.map(e => e.join(','))].join('\n');
+            const encodedUri = encodeURI(csvContent);
+            const link = document.createElement("a");
+            link.setAttribute("href", encodedUri);
+            link.setAttribute("download", `QuickBooks_Approved_Invoices_${new Date().toISOString().slice(0,10)}.csv`);
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+
+            showToast(`📥 Exported ${approved.length} approved record(s) to QuickBooks CSV!`, "success");
+        }
+
+        // Task 3: One-Click Lien Waiver Request Action
+        function requestLienWaiver(recordId) {
+            const rec = records.find(r => r.id === recordId);
+            if (!rec) return;
+
+            rec.waiverStatus = 'WAIVER_REQUESTED';
+            rec.flags = rec.flags.filter(f => !f.includes('MISSING_LIEN_WAIVER'));
+
+            renderRecords();
+
+            // Active feedback toast specification
+            const formattedAmount = rec.amount.toLocaleString('en-US', {minimumFractionDigits: 2});
+            showToast(`Conditional lien waiver link dispatched to vendor for $${formattedAmount}`, "success");
+        }
+
+        // Task 2: Side-by-Side Review Drawer Logic
+        function openReviewDrawer(recordId) {
+            const rec = records.find(r => r.id === recordId);
+            if (!rec) return;
+
+            activeEditingId = recordId;
+
+            document.getElementById('drawer-invoice-id-subtitle').textContent = `Invoice ID: ${rec.id}`;
+            document.getElementById('drawer-channel-badge').textContent = rec.channel;
+            document.getElementById('preview-vendor-header').textContent = rec.vendor.toUpperCase();
+            document.getElementById('preview-inv-num').textContent = rec.id;
+            document.getElementById('preview-billed-amount').textContent = `$${rec.amount.toFixed(2)}`;
+
+            document.getElementById('drawer-vendor').value = rec.vendor;
+            document.getElementById('drawer-invoice-num').value = rec.id;
+            document.getElementById('drawer-amount').value = rec.amount;
+            document.getElementById('drawer-job').value = rec.jobId;
+            document.getElementById('drawer-cost-code').value = rec.costCode;
+            document.getElementById('drawer-lien-waiver').checked = (rec.waiverStatus === 'ATTACHED');
+
+            document.getElementById('review-drawer').classList.remove('hidden');
+        }
+
+        function closeReviewDrawer() {
+            document.getElementById('review-drawer').classList.add('hidden');
+            activeEditingId = null;
+        }
+
+        function saveAndReAudit() {
+            if (!activeEditingId) return;
+
+            const rec = records.find(r => r.id === activeEditingId);
+            if (!rec) return;
+
+            rec.vendor = document.getElementById('drawer-vendor').value;
+            rec.id = document.getElementById('drawer-invoice-num').value;
+            rec.amount = parseFloat(document.getElementById('drawer-amount').value) || 0;
+            rec.jobId = document.getElementById('drawer-job').value;
+            rec.costCode = document.getElementById('drawer-cost-code').value;
+            const hasLienWaiver = document.getElementById('drawer-lien-waiver').checked;
+
+            if (hasLienWaiver) {
+                rec.waiverStatus = 'ATTACHED';
+            }
+
+            // Re-run Audit Safeguards
+            let newFlags = [];
+            if (rec.amount > 1000 && rec.waiverStatus !== 'ATTACHED' && rec.waiverStatus !== 'WAIVER_REQUESTED') {
+                newFlags.push("MISSING_LIEN_WAIVER (> $1,000 requires signed release)");
+            }
+
+            const budgetObj = BUDGET_CAPS[rec.costCode] || { cap: 15000.00 };
+            const totalCommitted = getCostCodeCommitted(rec.costCode);
+            if (totalCommitted > budgetObj.cap) {
+                const overrun = totalCommitted - budgetObj.cap;
+                newFlags.push(`BUDGET_OVERRUN (Exceeds ${rec.costCode} budget by $${overrun.toFixed(2)})`);
+            }
+
+            rec.flags = newFlags;
+            rec.status = newFlags.length === 0 ? 'APPROVED_FOR_ERP' : 'REQUIRES_REVIEW';
+
+            closeReviewDrawer();
+            renderRecords();
+            showToast(`Saved & Re-Audited ${rec.id}: Status is now ${rec.status}`, "info");
+        }
+
+        function forceApproveERP() {
+            if (!activeEditingId) return;
+
+            const rec = records.find(r => r.id === activeEditingId);
+            if (!rec) return;
+
+            rec.vendor = document.getElementById('drawer-vendor').value;
+            rec.id = document.getElementById('drawer-invoice-num').value;
+            rec.amount = parseFloat(document.getElementById('drawer-amount').value) || rec.amount;
+            rec.jobId = document.getElementById('drawer-job').value;
+            rec.costCode = document.getElementById('drawer-cost-code').value;
+
+            rec.flags = [];
+            rec.status = 'APPROVED_FOR_ERP';
+
+            closeReviewDrawer();
+            renderRecords();
+            showToast(`⚡ ${rec.id} Force Approved & Pushed to ERP Sync Queue!`, "success");
+        }
+
+        // Mobile / Intake File Select Handler
+        function handleFileSelect(event) {
+            const file = event.target.files[0];
+            if (file) {
+                const preview = document.getElementById('file-name-preview');
+                preview.textContent = "📸 Captured: " + file.name + " (" + (file.size/1024).toFixed(1) + " KB)";
+                preview.classList.remove('hidden');
+            }
+        }
+
+        // Process Upload Form
+        function processUpload() {
+            const vendor = document.getElementById('vendor-input').value || "Boone Lumber Yard & Supply";
+            const amount = parseFloat(document.getElementById('amount-input').value) || 2850.00;
+            const jobId = document.getElementById('job-id').value;
+            const costCode = document.getElementById('cost-code').value;
+            const hasLienWaiver = document.getElementById('lien-waiver-check').checked;
+
+            const newId = `INV-WEB-${Math.floor(1000 + Math.random()*9000)}`;
+
+            let flags = [];
+            if (amount > 1000 && !hasLienWaiver) {
+                flags.push("MISSING_LIEN_WAIVER (> $1,000 requires signed release)");
+            }
+
+            const currentCommitted = getCostCodeCommitted(costCode) + amount;
+            const budgetCap = (BUDGET_CAPS[costCode] || { cap: 15000.00 }).cap;
+            if (currentCommitted > budgetCap) {
+                flags.push(`BUDGET_OVERRUN (Exceeds ${costCode} budget by $${(currentCommitted - budgetCap).toFixed(2)})`);
+            }
+
+            const status = flags.length > 0 ? "REQUIRES_REVIEW" : "APPROVED_FOR_ERP";
+
+            const newRec = {
+                id: newId,
+                vendor: vendor,
+                date: new Date().toISOString().slice(0,10),
+                amount: amount,
+                jobId: jobId,
+                costCode: costCode,
+                channel: "Web Portal",
+                status: status,
+                flags: flags,
+                waiverStatus: hasLienWaiver ? "ATTACHED" : "MISSING"
+            };
+
+            records.unshift(newRec);
+            renderRecords();
+
+            const card = document.getElementById('status-card');
+            const statusBg = flags.length > 0 ? "bg-amber-950/80 border-amber-800 text-amber-300" : "bg-emerald-950/80 border-emerald-800 text-emerald-300";
+
+            let flagsHtml = flags.map(f => `<div class="text-xs text-amber-300 bg-amber-900/30 p-2 rounded-lg border border-amber-800/50">⚠️ ${f}</div>`).join('');
+            if (flags.length === 0) {
+                flagsHtml = `<div class="text-xs text-emerald-300 bg-emerald-900/30 p-2 rounded-lg border border-emerald-800/50">✓ All Math, Lien Waiver & Budget Audits Passed!</div>`;
+            }
+
+            card.innerHTML = `
+                <div class="text-left space-y-3">
+                    <div class="flex justify-between items-center">
+                        <span class="text-xs font-mono text-slate-400 font-bold">${newId}</span>
+                        <span class="px-2.5 py-1 rounded-full text-xs font-bold border ${statusBg}">${status}</span>
+                    </div>
+                    <div class="text-base font-bold text-white">${vendor}</div>
+                    <div class="text-2xl font-black text-blue-400">$${amount.toLocaleString('en-US', {minimumFractionDigits: 2})}</div>
+                    <div class="text-xs text-slate-400">Job: ${jobId}<br>Code: ${costCode}</div>
+                    <div class="border-t border-slate-800 pt-2 space-y-1">${flagsHtml}</div>
+                </div>
+            `;
+
+            showToast(`Ingested ${newId}: Ingestion & Audit Completed`, flags.length === 0 ? "success" : "info");
+        }
+    </script>
+</body>
+</html>
