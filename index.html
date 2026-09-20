@@ -519,7 +519,9 @@
 
                 const statusBadge = isApproved
                     ? `<span class="px-3 py-1 rounded-full text-[10px] font-black tracking-wider border bg-emerald-500/10 text-emerald-400 border-emerald-500/40 shadow-[0_0_10px_rgba(16,185,129,0.2)] flex items-center gap-1"><span>✓</span> BUDGET CLEARED & ERP READY</span>`
-                    : `<span class="px-3 py-1 rounded-full text-[10px] font-black tracking-wider border bg-amber-500/10 text-amber-400 border-amber-500/50 shadow-[0_0_10px_rgba(245,158,11,0.2)] flex items-center gap-1"><span>⚠️</span> REQUIRES AUDIT REVIEW</span>`;
+                    : (r.status === 'WAIVER_PENDING' || r.waiverStatus === 'WAIVER_REQUESTED'
+                        ? `<span class="px-3 py-1 rounded-full text-[10px] font-black tracking-wider border bg-cyan-950/80 text-cyan-300 border-cyan-500/50 shadow-[0_0_10px_rgba(6,182,212,0.2)] flex items-center gap-1"><span>📲</span> WAIVER_PENDING (SMS Dispatched)</span>`
+                        : `<span class="px-3 py-1 rounded-full text-[10px] font-black tracking-wider border bg-amber-500/10 text-amber-400 border-amber-500/50 shadow-[0_0_10px_rgba(245,158,11,0.2)] flex items-center gap-1"><span>⚠️</span> REQUIRES AUDIT REVIEW</span>`);
 
                 const hasMissingWaiver = r.waiverStatus === 'MISSING' || (r.flags && r.flags.some(f => f.includes('MISSING_LIEN_WAIVER')));
 
@@ -657,20 +659,47 @@
             showToast(`📥 Exported ${approved.length} approved record(s) to QuickBooks CSV!`, "success");
         }
 
-        // Task 3: One-Click Lien Waiver Request Action
+        // Lien Waiver Dispatch Modal Logic
+        let activeWaiverRecordId = null;
+
         function requestLienWaiver(recordId) {
             const rec = records.find(r => r.id === recordId);
             if (!rec) return;
 
+            activeWaiverRecordId = recordId;
+            document.getElementById('waiver-modal-vendor').textContent = rec.vendor;
+            document.getElementById('waiver-modal-amount').textContent = `$${rec.amount.toLocaleString('en-US', {minimumFractionDigits: 2})}`;
+            
+            const cleanVendor = rec.vendor.toLowerCase().replace(/[^a-z]/g, '') || 'vendor';
+            document.getElementById('waiver-recipient-input').value = `accounting@${cleanVendor}.com`;
+            document.getElementById('waiver-message-input').value = `SiteVault Alert: Invoice ${rec.id} for $${rec.amount.toLocaleString('en-US', {minimumFractionDigits: 2})} requires an executed lien waiver prior to payment release.`;
+
+            document.getElementById('lien-waiver-modal').classList.remove('hidden');
+        }
+
+        function closeLienWaiverModal() {
+            document.getElementById('lien-waiver-modal').classList.add('hidden');
+            activeWaiverRecordId = null;
+        }
+
+        function sendLienWaiverRequest() {
+            if (!activeWaiverRecordId) return;
+
+            const rec = records.find(r => r.id === activeWaiverRecordId);
+            if (!rec) return;
+
             rec.waiverStatus = 'WAIVER_REQUESTED';
+            rec.lien_waiver_requested = true;
+            rec.lien_waiver_requested_at = new Date().toISOString();
+            rec.status = 'WAIVER_PENDING';
             rec.flags = rec.flags.filter(f => !f.includes('MISSING_LIEN_WAIVER'));
 
+            closeLienWaiverModal();
             renderRecords();
             if (window.saveRecordToFirestore) window.saveRecordToFirestore(rec);
 
-            // Active feedback toast specification
             const formattedAmount = rec.amount.toLocaleString('en-US', {minimumFractionDigits: 2});
-            showToast(`Conditional lien waiver link dispatched to vendor for $${formattedAmount}`, "success");
+            showToast(`⚡ Lien waiver request dispatched for Invoice ${rec.id} ($${formattedAmount})`, "success");
         }
 
         // Task 2: Side-by-Side Review Drawer Logic
@@ -839,5 +868,50 @@
             showToast(`Ingested ${newId}: Ingestion & Audit Completed`, flags.length === 0 ? "success" : "info");
         }
     </script>
+    <!-- Lien Waiver Dispatch Confirmation Modal -->
+    <div id="lien-waiver-modal" class="fixed inset-0 z-50 hidden bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-4">
+        <div class="bg-slate-900 border border-slate-800 rounded-3xl max-w-lg w-full p-6 space-y-5 shadow-2xl relative overflow-hidden">
+            <div class="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-amber-500 via-cyan-500 to-amber-500"></div>
+            
+            <div class="flex justify-between items-center border-b border-slate-800 pb-3">
+                <h3 class="text-base font-extrabold text-white flex items-center gap-2">
+                    <span>⚡</span> Request Executed Lien Waiver
+                </h3>
+                <button onclick="closeLienWaiverModal()" class="text-slate-400 hover:text-white text-lg font-bold">✕</button>
+            </div>
+
+            <div class="space-y-4 text-xs">
+                <div class="bg-slate-950 p-3 rounded-xl border border-slate-800/80 grid grid-cols-2 gap-2 font-mono">
+                    <div>Vendor: <span id="waiver-modal-vendor" class="text-amber-400 font-bold"></span></div>
+                    <div>Amount: <span id="waiver-modal-amount" class="text-emerald-400 font-bold"></span></div>
+                </div>
+
+                <div>
+                    <label class="block font-bold text-slate-300 mb-1">Waiver Type</label>
+                    <select id="waiver-type-select" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-slate-200 font-semibold focus:outline-none focus:border-cyan-500">
+                        <option value="Conditional Progress Release">Conditional Progress Lien Release</option>
+                        <option value="Unconditional Final Release">Unconditional Final Lien Release</option>
+                    </select>
+                </div>
+
+                <div>
+                    <label class="block font-bold text-slate-300 mb-1">Recipient Phone / Email</label>
+                    <input type="text" id="waiver-recipient-input" placeholder="e.g. accounting@boonelumber.com / (573) 555-0199" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-slate-200 focus:outline-none focus:border-cyan-500">
+                </div>
+
+                <div>
+                    <label class="block font-bold text-slate-300 mb-1">Dispatch Message</label>
+                    <textarea id="waiver-message-input" rows="3" class="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-slate-200 font-mono text-[11px] focus:outline-none focus:border-cyan-500"></textarea>
+                </div>
+            </div>
+
+            <div class="flex justify-end gap-3 border-t border-slate-800 pt-4">
+                <button onclick="closeLienWaiverModal()" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold rounded-xl text-xs">Cancel</button>
+                <button onclick="sendLienWaiverRequest()" class="px-5 py-2 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 font-extrabold rounded-xl text-xs shadow-lg shadow-amber-500/20">
+                    📲 Send Request & Lock Payment
+                </button>
+            </div>
+        </div>
+    </div>
 </body>
 </html>
