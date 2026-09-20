@@ -259,13 +259,13 @@ class ConstructionDocEngine:
             card.innerHTML = `
                 <div class="text-left space-y-3">
                     <div class="flex justify-between items-center">
-                        <span class="text-xs font-mono text-slate-400 font-bold">INV-\${Math.floor(1000 + Math.random()*9000)}</span>
-                        <span class="px-2.5 py-1 rounded-full text-xs font-bold border \${statusBg}">\${status}</span>
+                        <span class="text-xs font-mono text-slate-400 font-bold">INV-${Math.floor(1000 + Math.random()*9000)}</span>
+                        <span class="px-2.5 py-1 rounded-full text-xs font-bold border ${statusBg}">${status}</span>
                     </div>
-                    <div class="text-base font-bold text-white">\${vendor}</div>
-                    <div class="text-2xl font-black text-blue-400">\$\${amount.toLocaleString('en-US', {minimumFractionDigits: 2})}</div>
-                    <div class="text-xs text-slate-400">Job: \${jobId}<br>Code: \${costCode}</div>
-                    <div class="border-t border-slate-800 pt-2 space-y-1">\${flagsHtml}</div>
+                    <div class="text-base font-bold text-white">${vendor}</div>
+                    <div class="text-2xl font-black text-blue-400">$${amount.toLocaleString('en-US', {minimumFractionDigits: 2})}</div>
+                    <div class="text-xs text-slate-400">Job: ${jobId}<br>Code: ${costCode}</div>
+                    <div class="border-t border-slate-800 pt-2 space-y-1">${flagsHtml}</div>
                 </div>
             `;
         }
