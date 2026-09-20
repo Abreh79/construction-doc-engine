@@ -28,6 +28,11 @@ class ConstructionDocEngine:
     def save_db(self):
         with open(DB_PATH, 'w') as f:
             json.dump(self.records, f, indent=2)
+        try:
+            from firebase_bridge import sync_db_to_firestore
+            sync_db_to_firestore()
+        except Exception as e:
+            print("Firestore sync warning:", e)
 
     def process_document(self, data):
         inv_id = data.get("invoice_id")

@@ -290,8 +290,8 @@
             "15-0000-PLUMBING": { name: "Plumbing Utilities", cap: 10000.00 }
         };
 
-        // Master Records Database
-        let records = [
+        // Seed Records Backup
+        const seedRecords = [
             {
                 id: "INV-ERR-9902",
                 vendor: "Boone Lumber Yard",
@@ -359,12 +359,65 @@
             }
         ];
 
+        let records = [...seedRecords];
         let activeEditingId = null;
 
         // Initialize UI
         document.addEventListener('DOMContentLoaded', () => {
             renderRecords();
         });
+    </script>
+
+    <!-- Firebase 10.x Web SDK Imports & Real-Time Sync -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getFirestore, collection, onSnapshot, doc, setDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+        const firebaseConfig = {
+            projectId: "studio-7106835876-c5253",
+            appId: "1:223168075515:web:7266342cc1733184e3025e",
+            storageBucket: "studio-7106835876-c5253.firebasestorage.app",
+            authDomain: "studio-7106835876-c5253.firebaseapp.com",
+            messagingSenderId: "223168075515"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        // Real-Time Firestore Sync Listener
+        const invoicesRef = collection(db, "construction_invoices");
+        onSnapshot(invoicesRef, (snapshot) => {
+            if (!snapshot.empty) {
+                const fetched = [];
+                snapshot.forEach((docSnap) => {
+                    const data = docSnap.data();
+                    fetched.push({ id: docSnap.id, ...data });
+                });
+                records = fetched.sort((a, b) => (b.date || '').localeCompare(a.date || ''));
+                renderRecords();
+            } else {
+                // Seed if collection is currently empty
+                seedInitialFirestore(db);
+            }
+        }, (err) => {
+            console.warn("Firestore listener warning, using local records:", err);
+            renderRecords();
+        });
+
+        async function seedInitialFirestore(db) {
+            for (const r of seedRecords) {
+                await setDoc(doc(db, "construction_invoices", r.id), { ...r, updatedAt: serverTimestamp() });
+            }
+        }
+
+        window.saveRecordToFirestore = async function(rec) {
+            try {
+                await setDoc(doc(db, "construction_invoices", rec.id), { ...rec, updatedAt: serverTimestamp() });
+            } catch (e) {
+                console.error("Firestore write failed:", e);
+            }
+        };
+    </script>
 
         // Toast Feedback System
         function showToast(message, type = 'info') {
@@ -613,6 +666,7 @@
             rec.flags = rec.flags.filter(f => !f.includes('MISSING_LIEN_WAIVER'));
 
             renderRecords();
+            if (window.saveRecordToFirestore) window.saveRecordToFirestore(rec);
 
             // Active feedback toast specification
             const formattedAmount = rec.amount.toLocaleString('en-US', {minimumFractionDigits: 2});
@@ -682,6 +736,7 @@
 
             closeReviewDrawer();
             renderRecords();
+            if (window.saveRecordToFirestore) window.saveRecordToFirestore(rec);
             showToast(`Saved & Re-Audited ${rec.id}: Status is now ${rec.status}`, "info");
         }
 
@@ -702,6 +757,7 @@
 
             closeReviewDrawer();
             renderRecords();
+            if (window.saveRecordToFirestore) window.saveRecordToFirestore(rec);
             showToast(`⚡ ${rec.id} Force Approved & Pushed to ERP Sync Queue!`, "success");
         }
 
@@ -757,6 +813,7 @@
 
             records.unshift(newRec);
             renderRecords();
+            if (window.saveRecordToFirestore) window.saveRecordToFirestore(newRec);
 
             const card = document.getElementById('status-card');
             const statusBg = flags.length > 0 ? "bg-amber-950/80 border-amber-800 text-amber-300" : "bg-emerald-950/80 border-emerald-800 text-emerald-300";
