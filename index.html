@@ -19,7 +19,7 @@
 
     <div class="max-w-7xl mx-auto space-y-10">
         <!-- High-End Command Header -->
-        <header class="border-b border-white/10 bg-slate-950/80 backdrop-blur-md sticky top-0 z-50 px-4 sm:px-8 py-4 flex flex-col sm:flex-row justify-between items-center gap-4 rounded-2xl mb-8">
+        <header class="border-b border-white/10 bg-slate-950/80 backdrop-blur-md sticky top-0 z-50 px-4 sm:px-8 py-4 flex flex-col lg:flex-row justify-between items-center gap-4 rounded-2xl mb-8">
           <div class="flex items-center gap-3">
             <div class="h-10 w-10 rounded-xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-center text-amber-400 font-black text-xl shadow-[0_0_15px_rgba(245,158,11,0.2)]">
               ⚡
@@ -32,15 +32,32 @@
             </div>
           </div>
 
-          <!-- Live Financial Protection Ticker -->
-          <div class="flex items-center gap-4 sm:gap-6">
-            <span id="total-count-badge" class="bg-slate-900 text-amber-400 border border-amber-500/30 px-3 py-1.5 rounded-lg text-xs font-extrabold font-mono">
-                5 Total Ingested
+          <!-- Dynamic Executive Stat Ticker -->
+          <div class="flex flex-wrap items-center justify-end gap-3 sm:gap-4 text-xs font-mono">
+            <span id="total-count-badge" class="bg-slate-900 text-amber-400 border border-amber-500/30 px-3 py-1.5 rounded-lg text-xs font-extrabold font-mono shadow-[0_0_10px_rgba(245,158,11,0.1)]">
+                5 Ingested
             </span>
-            <div class="text-right">
-              <div class="text-[10px] uppercase tracking-widest text-slate-400 font-bold">Audit Exposure Blocked</div>
-              <div class="text-base font-mono font-bold text-emerald-400">$18,450.00</div>
+
+            <div class="bg-slate-900/80 border border-slate-800 px-3 py-1.5 rounded-lg text-right">
+              <div class="text-[9px] uppercase tracking-widest text-slate-400 font-bold">Volume Audited</div>
+              <div id="ticker-volume-audited" class="text-xs font-bold text-slate-200">$0.00</div>
             </div>
+
+            <div class="bg-slate-900/80 border border-amber-500/20 px-3 py-1.5 rounded-lg text-right">
+              <div class="text-[9px] uppercase tracking-widest text-amber-400/80 font-bold">High-Risk Flags</div>
+              <div id="ticker-high-risk-flags" class="text-xs font-bold text-amber-400">0 Flags</div>
+            </div>
+
+            <div class="bg-slate-900/80 border border-slate-800 px-3 py-1.5 rounded-lg text-right">
+              <div class="text-[9px] uppercase tracking-widest text-slate-400 font-bold">Active Jobs</div>
+              <div id="ticker-active-jobs" class="text-xs font-bold text-cyan-400">0 Jobs</div>
+            </div>
+
+            <div class="bg-slate-900/80 border border-emerald-500/30 px-3 py-1.5 rounded-lg text-right shadow-[0_0_12px_rgba(16,185,129,0.1)]">
+              <div class="text-[9px] uppercase tracking-widest text-slate-400 font-bold">Audit Exposure Blocked</div>
+              <div id="ticker-exposure-blocked" class="text-sm font-mono font-bold text-emerald-400">$0.00</div>
+            </div>
+
             <button onclick="openCustomerBillingPortal()" class="px-4 py-2 rounded-lg bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 font-bold text-xs uppercase tracking-wider shadow-lg shadow-amber-500/20 transition-all cursor-pointer">
               Workspace & Billing
             </button>
@@ -54,15 +71,26 @@
             </h2>
 
             <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-                <!-- Dropzone & Inputs -->
+                <!-- Dropzone & Inputs with Heavy-Duty Viewfinder HUD -->
                 <div class="space-y-4">
-                    <div id="drop-zone" onclick="document.getElementById('invoice-upload').click()" class="border-2 border-dashed border-slate-700 hover:border-blue-500 rounded-2xl p-6 text-center cursor-pointer transition-all bg-slate-950/60 group">
+                    <div id="drop-zone" onclick="document.getElementById('invoice-upload').click()" class="relative border-2 border-dashed border-amber-500/40 hover:border-amber-400 rounded-2xl p-8 text-center cursor-pointer transition-all bg-slate-950/80 group overflow-hidden shadow-[inset_0_0_20px_rgba(0,0,0,0.8)] hover:shadow-[0_0_30px_rgba(245,158,11,0.15)]">
+                        <!-- HUD Viewfinder Corner Crosshairs -->
+                        <div class="absolute top-2 left-2 w-4 h-4 border-t-2 border-l-2 border-amber-400/80 group-hover:border-cyan-400 transition-colors"></div>
+                        <div class="absolute top-2 right-2 w-4 h-4 border-t-2 border-r-2 border-amber-400/80 group-hover:border-cyan-400 transition-colors"></div>
+                        <div class="absolute bottom-2 left-2 w-4 h-4 border-b-2 border-l-2 border-amber-400/80 group-hover:border-cyan-400 transition-colors"></div>
+                        <div class="absolute bottom-2 right-2 w-4 h-4 border-b-2 border-r-2 border-amber-400/80 group-hover:border-cyan-400 transition-colors"></div>
+                        
                         <!-- Task 5: Job-Site Mobile Camera Optimization -->
                         <input type="file" id="invoice-upload" accept="image/*,application/pdf" capture="environment" class="hidden" onchange="handleFileSelect(event)">
-                        <div class="text-4xl mb-2 group-hover:scale-110 transition-transform">📄</div>
-                        <p class="text-sm font-semibold text-slate-200">Tap to Snap Photo or Select Invoice PDF</p>
-                        <p class="text-xs text-slate-500 mt-1">Direct Field Rear Camera Capture (JPG, PNG, HEIC, PDF)</p>
-                        <div id="file-name-preview" class="hidden mt-3 text-xs font-mono bg-blue-950/60 text-blue-400 border border-blue-800/50 py-1.5 px-3 rounded-lg"></div>
+                        
+                        <div class="relative z-10 flex flex-col items-center justify-center space-y-2">
+                            <div class="h-12 w-12 rounded-xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-center text-amber-400 text-2xl group-hover:scale-110 group-hover:border-cyan-400 group-hover:text-cyan-400 transition-all shadow-[0_0_15px_rgba(245,158,11,0.2)]">
+                                📸
+                            </div>
+                            <p class="text-sm font-extrabold text-white tracking-wide">Drag & Drop Subcontractor Invoice / Tap to Snap Site Receipt</p>
+                            <p class="text-xs text-amber-400/80 font-mono tracking-tight">Direct Field Rear Camera Capture (JPG, PNG, HEIC, PDF)</p>
+                            <div id="file-name-preview" class="hidden mt-3 text-xs font-mono bg-cyan-950/80 text-cyan-300 border border-cyan-500/40 py-1.5 px-3 rounded-lg shadow-[0_0_10px_rgba(6,182,212,0.2)]"></div>
+                        </div>
                     </div>
 
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
@@ -379,13 +407,41 @@
                 .reduce((sum, r) => sum + r.amount, 0);
         }
 
+        // Update Dynamic Executive Stat Ticker
+        function updateExecutiveTicker() {
+            const totalAudited = records.reduce((sum, r) => sum + r.amount, 0);
+            
+            // Audit Exposure Blocked = sum of invoice amounts currently flagged or awaiting review
+            const exposureBlocked = records
+                .filter(r => r.status === 'REQUIRES_REVIEW' || (r.flags && r.flags.length > 0))
+                .reduce((sum, r) => sum + r.amount, 0);
+
+            // Total High-Risk Flags
+            const totalFlags = records.reduce((count, r) => count + (r.flags ? r.flags.length : 0), 0);
+
+            // Active Job Sites
+            const activeJobsCount = new Set(records.map(r => r.jobId)).size;
+
+            const elBadge = document.getElementById('total-count-badge');
+            const elAudited = document.getElementById('ticker-volume-audited');
+            const elFlags = document.getElementById('ticker-high-risk-flags');
+            const elJobs = document.getElementById('ticker-active-jobs');
+            const elBlocked = document.getElementById('ticker-exposure-blocked');
+
+            if (elBadge) elBadge.textContent = `${records.length} Ingested`;
+            if (elAudited) elAudited.textContent = `$${totalAudited.toLocaleString('en-US', {minimumFractionDigits: 2})}`;
+            if (elFlags) elFlags.textContent = `${totalFlags} Active Flags`;
+            if (elJobs) elJobs.textContent = `${activeJobsCount} Job Sites`;
+            if (elBlocked) elBlocked.textContent = `$${exposureBlocked.toLocaleString('en-US', {minimumFractionDigits: 2})}`;
+        }
+
         // Render Cards Grid
         function renderRecords() {
             const grid = document.getElementById('records-grid');
-            document.getElementById('total-count-badge').textContent = `${records.length} Total Ingested`;
+            updateExecutiveTicker();
 
             grid.innerHTML = records.map(r => {
-                // Task 4: Calculate Phase Budget metrics
+                // Calculate Phase Budget metrics
                 const budgetObj = BUDGET_CAPS[r.costCode] || { cap: 15000.00 };
                 const budgetCap = budgetObj.cap;
                 const committed = getCostCodeCommitted(r.costCode);
@@ -394,20 +450,30 @@
                 const remaining = !isOver ? budgetCap - committed : 0;
                 const pct = Math.min(100, Math.round((committed / budgetCap) * 100));
 
-                const barColor = isOver ? 'bg-red-500 shadow-lg shadow-red-500/50' : 'bg-blue-500';
+                const barColor = isOver 
+                    ? 'bg-gradient-to-r from-red-500 to-rose-600 shadow-[0_0_10px_rgba(239,68,68,0.5)]' 
+                    : 'bg-gradient-to-r from-cyan-500 to-blue-500';
+
+                const isApproved = (r.status === 'APPROVED_FOR_ERP');
                 
-                const statusBg = r.status === 'APPROVED_FOR_ERP'
-                    ? 'bg-emerald-950/80 text-emerald-400 border-emerald-800/80'
-                    : 'bg-amber-950/80 text-amber-300 border-amber-800/80';
+                const cardContainerClass = isApproved
+                    ? 'bg-slate-900/90 border border-emerald-500/40 rounded-3xl p-6 shadow-xl shadow-emerald-950/20 hover:border-emerald-500/70 transition-all relative overflow-hidden flex flex-col justify-between space-y-4'
+                    : 'bg-slate-900/90 border-2 border-amber-500/60 rounded-3xl p-6 shadow-2xl shadow-amber-950/30 hover:border-amber-400 transition-all relative overflow-hidden flex flex-col justify-between space-y-4';
 
-                // Check if has missing lien waiver flag
-                const hasMissingWaiver = r.waiverStatus === 'MISSING' || r.flags.some(f => f.includes('MISSING_LIEN_WAIVER'));
+                const cardTopAccent = isApproved
+                    ? '<div class="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-emerald-500 to-teal-400"></div>'
+                    : '<div class="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-amber-500 via-rose-500 to-amber-500"></div>';
 
-                // Action buttons HTML
+                const statusBadge = isApproved
+                    ? `<span class="px-3 py-1 rounded-full text-[10px] font-black tracking-wider border bg-emerald-500/10 text-emerald-400 border-emerald-500/40 shadow-[0_0_10px_rgba(16,185,129,0.2)] flex items-center gap-1"><span>✓</span> BUDGET CLEARED & ERP READY</span>`
+                    : `<span class="px-3 py-1 rounded-full text-[10px] font-black tracking-wider border bg-amber-500/10 text-amber-400 border-amber-500/50 shadow-[0_0_10px_rgba(245,158,11,0.2)] flex items-center gap-1"><span>⚠️</span> REQUIRES AUDIT REVIEW</span>`;
+
+                const hasMissingWaiver = r.waiverStatus === 'MISSING' || (r.flags && r.flags.some(f => f.includes('MISSING_LIEN_WAIVER')));
+
                 let actionBtnHtml = '';
-                if (r.status === 'REQUIRES_REVIEW') {
+                if (!isApproved) {
                     actionBtnHtml = `
-                        <button onclick="openReviewDrawer('${r.id}')" class="w-full mt-3 py-2 bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 font-extrabold rounded-xl border border-amber-500/40 text-xs transition-all flex items-center justify-center gap-1.5">
+                        <button onclick="openReviewDrawer('${r.id}')" class="w-full mt-3 py-2.5 bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 font-extrabold rounded-xl border border-amber-500/40 text-xs transition-all flex items-center justify-center gap-1.5 shadow-[0_0_10px_rgba(245,158,11,0.1)]">
                             <span>🔍 Side-by-Side Review & Resolve</span>
                         </button>
                     `;
@@ -415,50 +481,57 @@
 
                 let waiverBtnHtml = '';
                 if (hasMissingWaiver && r.waiverStatus !== 'WAIVER_REQUESTED') {
-                    // Task 3: One-Click Lien Waiver Request Action Button
                     waiverBtnHtml = `
-                        <button onclick="requestLienWaiver('${r.id}')" class="mt-2 text-[11px] bg-blue-600/30 hover:bg-blue-600/50 text-blue-300 border border-blue-500/40 font-bold px-3 py-1.5 rounded-lg transition-all flex items-center gap-1">
+                        <button onclick="requestLienWaiver('${r.id}')" class="mt-2 text-[11px] bg-cyan-600/30 hover:bg-cyan-600/50 text-cyan-300 border border-cyan-500/40 font-bold px-3 py-1.5 rounded-lg transition-all flex items-center gap-1 shadow-[0_0_10px_rgba(6,182,212,0.15)]">
                             <span>⚡ Request Lien Waiver (SMS/Email)</span>
                         </button>
                     `;
                 } else if (r.waiverStatus === 'WAIVER_REQUESTED') {
                     waiverBtnHtml = `
-                        <div class="mt-2 text-[10px] bg-blue-950 text-blue-400 border border-blue-800/60 px-2.5 py-1 rounded-lg font-mono font-bold inline-block">
+                        <div class="mt-2 text-[10px] bg-cyan-950 text-cyan-300 border border-cyan-800/60 px-2.5 py-1 rounded-lg font-mono font-bold inline-block">
                             📲 Waiver Dispatched via SMS/Email
                         </div>
                     `;
                 }
 
-                // Flags List HTML
+                // Breakdown flags list formatting
                 let flagsListHtml = '';
                 if (r.flags && r.flags.length > 0) {
-                    flagsListHtml = `<ul class="space-y-1">` + r.flags.map(f => `<li class="text-xs text-amber-300 font-medium">⚠️ ${f}</li>`).join('') + `</ul>`;
+                    flagsListHtml = `<div class="space-y-1.5">` + r.flags.map(f => {
+                        let chipColor = "bg-amber-950/80 text-amber-300 border-amber-800/80";
+                        if (f.includes("MATH_MISMATCH")) chipColor = "bg-rose-950/80 text-rose-300 border-rose-800/80";
+                        if (f.includes("BUDGET_OVERRUN")) chipColor = "bg-red-950/80 text-red-300 border-red-800/80";
+                        return `<div class="text-[11px] font-mono px-2.5 py-1 rounded-lg border ${chipColor} flex items-center gap-1.5"><span>⚠️</span> ${f}</div>`;
+                    }).join('') + `</div>`;
                 } else {
-                    flagsListHtml = `<span class="text-xs text-emerald-400 font-medium">✓ All Math, Lien & Budget Audits Passed</span>`;
+                    flagsListHtml = `<div class="text-xs text-emerald-400 font-bold flex items-center gap-1 bg-emerald-950/40 border border-emerald-800/40 px-3 py-1.5 rounded-lg"><span>✓</span> Math, Lien Waiver & Budget Audits Passed</div>`;
                 }
 
                 return `
-                <div class="bg-slate-900 border border-slate-800 rounded-3xl p-6 shadow-xl flex flex-col justify-between space-y-4 hover:border-slate-700 transition-all relative">
-                    <div>
-                        <div class="flex justify-between items-center mb-3">
+                <div class="${cardContainerClass}">
+                    ${cardTopAccent}
+                    <div class="pt-1">
+                        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-3">
                             <span class="text-xs font-mono text-slate-400 font-bold">${r.id}</span>
-                            <span class="px-3 py-1 rounded-full text-[11px] font-black border ${statusBg}">${r.status}</span>
+                            ${statusBadge}
                         </div>
                         <h3 class="text-lg font-extrabold text-white mb-1">${r.vendor}</h3>
-                        <div class="text-xs text-slate-400 font-medium">Job: <span class="text-slate-200 font-semibold">${r.jobId}</span></div>
-                        <div class="text-xs text-slate-400 font-medium mt-0.5">Code: <span class="text-slate-200 font-mono">${r.costCode}</span></div>
+                        <div class="grid grid-cols-2 gap-2 text-xs text-slate-400 font-medium my-2 bg-slate-950/50 p-2.5 rounded-xl border border-slate-800/80 font-mono">
+                            <div>Job: <span class="text-slate-200 font-bold">${r.jobId}</span></div>
+                            <div>Code: <span class="text-slate-200 font-bold">${r.costCode}</span></div>
+                        </div>
                         
-                        <!-- Task 4: Real-Time Phase Budget Visualizer -->
-                        <div class="mt-4 bg-slate-950/80 border border-slate-800/80 rounded-2xl p-3 space-y-2">
+                        <!-- Phase Budget Visualizer -->
+                        <div class="mt-3 bg-slate-950/80 border border-slate-800/80 rounded-2xl p-3 space-y-2">
                             <div class="flex justify-between items-center text-[11px] font-mono">
-                                <span class="text-slate-400 font-bold">Phase Budget Bar</span>
-                                <span class="text-slate-300">${pct}%</span>
+                                <span class="text-slate-400 font-bold">Phase Budget</span>
+                                <span class="text-slate-300 font-bold">${pct}%</span>
                             </div>
                             <div class="w-full bg-slate-800 rounded-full h-2 overflow-hidden">
                                 <div class="${barColor} h-2 rounded-full transition-all duration-500" style="width: ${pct}%"></div>
                             </div>
                             <div class="text-[10px] font-mono text-slate-400 space-y-0.5 pt-0.5">
-                                <div>Phase Budget: $${budgetCap.toLocaleString('en-US', {minimumFractionDigits: 2})} | Committed: $${committed.toLocaleString('en-US', {minimumFractionDigits: 2})}</div>
+                                <div>Cap: $${budgetCap.toLocaleString('en-US', {minimumFractionDigits: 2})} | Committed: $${committed.toLocaleString('en-US', {minimumFractionDigits: 2})}</div>
                                 ${isOver 
                                     ? `<div class="text-red-400 font-extrabold">⚠️ Over budget by $${overrunAmount.toLocaleString('en-US', {minimumFractionDigits: 2})}</div>`
                                     : `<div class="text-emerald-400">Balance Remaining: $${remaining.toLocaleString('en-US', {minimumFractionDigits: 2})}</div>`
@@ -466,10 +539,13 @@
                             </div>
                         </div>
 
-                        <div class="mt-4 text-3xl font-black text-blue-400">$${r.amount.toLocaleString('en-US', {minimumFractionDigits: 2})}</div>
+                        <div class="mt-4 flex justify-between items-baseline">
+                            <span class="text-xs text-slate-400 font-mono uppercase tracking-wider">Total Billed</span>
+                            <span class="text-3xl font-black ${isApproved ? 'text-emerald-400' : 'text-amber-400'} font-mono">$${r.amount.toLocaleString('en-US', {minimumFractionDigits: 2})}</span>
+                        </div>
                     </div>
 
-                    <div class="border-t border-slate-800 pt-3 space-y-2">
+                    <div class="border-t border-slate-800/80 pt-3 mt-4 space-y-2">
                         <div class="flex justify-between items-center">
                             <span class="text-xs font-bold text-slate-400">Audit Verification:</span>
                             <span class="text-[10px] font-bold bg-slate-800 text-slate-300 px-2 py-0.5 rounded-full border border-slate-700 font-mono">Channel: ${r.channel}</span>
